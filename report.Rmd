@@ -1,0 +1,971 @@
+---
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+header-includes:
+- \usepackage{xcolor}
+- \usepackage{graphicx}
+- \usepackage{tcolorbox} % For creating text boxes
+- \usepackage{xcolor} % Use color package for customization
+- \definecolor{whodarkblue}{RGB}{0, 32, 92}
+- \definecolor{wholightblue}{RGB}{0, 154, 222}
+- \definecolor{wholightblueshade}{RGB}{121, 181, 227}
+- \definecolor{wholightblueshadev2}{RGB}{201, 221, 243}
+- \setmainfont{Arial}
+- \usepackage{fancyhdr} % Allows customization of headers and footers
+- \pagestyle{fancy} % Enable fancy header/footer style
+- \fancyhf{}
+- "\\fancyhead[L]{\\color{whodarkblue} Health data overview   |   Afghanistan} % Add
+  left-aligned content (e.g., section title)"
+- \fancyhead[C]{} % Empty center
+- "\\fancyhead[R]{\\color{whodarkblue}\\thepage} % Add right-aligned content (e.g.,
+  author name)"
+- \renewcommand{\headrule}{{\color{whodarkblue}\hrule width\headwidth height\headrulewidth}}
+- \renewcommand{\headrulewidth}{0.6pt} % Add a horizontal line with thickness of 0.4pt
+- \setlength{\headheight}{30pt} % Increase header height if needed
+geometry: margin=1.75cm
+---
+
+\thispagestyle{empty}
+\pagecolor{whodarkblue}
+
+\begin{flushleft}
+{\color{white}\rule{\linewidth}{0.25mm}} \\
+\vspace{1.5cm}
+{\fontsize{50}{60}\selectfont \color{white} Health Data Overview} \\
+\vspace{1.5cm}
+{\fontsize{25}{30}\selectfont \color{wholightblueshade} `r toupper("Afghanistan")`}
+
+\vspace*{15cm} 
+
+\end{flushleft}
+
+\begin{flushright}
+\includegraphics[width=5cm]{WHO-EN-W-H.png}
+\end{flushright}
+
+
+\newpage
+\pagecolor{white}
+
+```{r settings, echo= FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r parameters, echo = FALSE, message = FALSE, include = FALSE, eval = TRUE}
+# list2env(params, .GlobalEnv)
+```
+
+```{r packages, include=FALSE}
+library(tidyverse)
+library(treemap)
+library(ghost)
+# library(sf)
+# library(RColorBrewer)
+# library(kableExtra)
+library(ggpol)
+library(extrafont)
+library(showtext)
+library(patchwork)
+library(cowplot)
+library(ggnewscale)
+library(flextable)
+library(whoville)
+# library(DemoDecomp)
+library(ggrepel)
+library(ggbump)
+# library(forcats)
+library(ggpubr)
+library(ggh4x)
+library(httr)
+library(jsonlite)
+
+load("data_req.rda")
+sdg_ <- sdg %>% distinct(IND_UUID, IND_CODE, IND_PER_CODE, IndicatorName, IND_ID) 
+```
+
+```{r text_values, include=FALSE}
+
+# total population
+total_pop2023 <- pop %>% filter(country == "Afghanistan" & year==2023) %>% pull(totalpop_jul)
+total_pop2050 <- pop %>% filter(country == "Afghanistan" & year==2050) %>% pull(totalpop_jul)
+total_pop_increase <- round(((as.numeric(total_pop2050) - as.numeric(total_pop2023)) / as.numeric(total_pop2023))*100, digits = 0)
+
+# life expectany
+le_2000 <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == "Afghanistan") %>% pull(NumericValue)
+le_2000_lwr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == "Afghanistan") %>% pull(Low)
+le_2000_upr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == "Afghanistan") %>% pull(High)
+
+le_2021 <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == "Afghanistan") %>% pull(NumericValue)
+le_2021_lwr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == "Afghanistan") %>% pull(Low)
+le_2021_upr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == "Afghanistan") %>% pull(High)
+
+change <- abs(le_2021 - le_2000)
+change_text <- case_when(
+ le_2021 < le_2000 ~ "decreased by",
+ le_2000 < le_2021 ~ "improved by"
+)
+
+```
+
+```{r pop_pyramid, include=F, message=FALSE}
+pop_data <- pop_age %>% 
+  filter(country =="Afghanistan" & year %in% c(2023,2050)) %>% 
+  mutate(ageg = factor(ageg, 
+                       levels = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39",
+                                  "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85+")
+                       ))
+
+max_lim <- max(pop_data$total_pop)
+pop_data$total_pop <- ifelse(pop_data$sex == "Female", pop_data$total_pop*-1, pop_data$total_pop)
+
+png("pop_pyramid.png", height = 790, width = 700)
+
+# make plot
+ggplot() + 
+  geom_col(data = pop_data %>% filter(year==2050),
+           aes(x= ageg, y = total_pop, fill = sex), width = 0.7, alpha = 0.3, show.legend = F)+
+  geom_col(data = pop_data %>% filter(year==2023),
+           aes(x= ageg, y = total_pop, fill = sex), width = 0.4, show.legend = F) +
+
+  facet_wrap(~sex, scales = 'free_x', strip.position = "bottom") +
+  coord_flip(clip = 'off') +
+  scale_fill_manual(values = c("Male" = "#F4A81D",
+                               "Female" = "#5B2C86"))+
+  facetted_pos_scales(
+    y = list(scale_y_continuous(limits = c(-max_lim, 0), expand = c(0,0),
+                                ),
+             scale_y_continuous(limits = c(0, max_lim), expand = c(0,0),
+                                )
+             )
+    ) +
+  theme_classic() +
+  theme(
+      strip.background = element_blank(),
+      strip.text = element_text(family="calibri", size = 20),
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.ticks.y = element_line(color = "white"),
+      axis.line.x = element_blank(),
+      axis.line.y = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major.y = element_line(color = "grey"),
+      axis.text.y = element_text(family="calibri", size = 20, color = "black")
+    )  
+
+dev.off()
+```
+
+\begin{minipage}{0.43\textwidth}
+\begin{tcolorbox}[colback=wholightblueshadev2, colframe=wholightblueshadev2, title=Overview, coltitle=whodarkblue, fonttitle=\Large\bfseries, height=9cm, boxsep=3mm]
+
+In Afghanistan, the current population is `r total_pop2023` as of 2023 with a projected increase of `r total_pop_increase`\% to `r total_pop2050` by 2050.
+\\
+\\
+Life expectancy at birth (years) has `r change_text` `r round(change,1)` years from `r round(le_2000,1)` [`r round(le_2000_lwr,1)` - `r round(le_2000_upr,1)`] years in 2000 to `r round(le_2021,1)` [`r round(le_2021_lwr,1)` - `r round(le_2021_upr,1)`] years in 2021.
+
+\end{tcolorbox}
+\end{minipage}
+\hfill
+\begin{minipage}{0.5\textwidth}
+\large Demographic change 2023 - 2050
+\includegraphics{pop_pyramid.png}
+\end{minipage}
+
+\
+\
+
+\rule{\textwidth}{0.6pt}\color{whodarkblue}
+\large Life expectancy and healthy life expectancy by sex, 2000–2021
+
+```{r life_exp_bysex, fig.height=4.3, fig.align='center', fig.width=8}
+exp <- lehale %>% 
+  filter(IndicatorCode=="WHOSIS_000002" | IndicatorCode=="WHOSIS_000001") %>%
+  filter(country=="Afghanistan") %>% 
+  mutate(name = ifelse(IndicatorCode=="WHOSIS_000001", "Life expectancy at birth", "Healthly life expectancy at birth")) %>% 
+  select(country, year, sex, name, value = NumericValue) %>% 
+  mutate(value = round(value, 1)) %>% 
+  mutate(name = factor(name, levels = c("Life expectancy at birth", "Healthly life expectancy at birth")))
+
+max <- exp %>% select(value) %>% arrange(desc(value)) %>% filter(row_number()==1) %>% pull()
+min <- exp %>% select(value) %>% arrange(value) %>% filter(row_number()==1) %>% pull()
+
+ggplot()+
+  geom_line(data = exp, aes(x=year, y=value, color=sex), size = 1) +
+  geom_text(data = exp %>% filter(year==2021),
+            mapping = aes(x = 2021.5, y = value, label = value, color = sex), show.legend = F, hjust = 0
+    # mapping = aes(x = 2021.5, y = value, label = paste0(value, " (", sex, ")"), color = sex), show.legend = F, hjust = 0
+    ) +
+  facet_wrap(~name, scales = 'free_x', strip.position = "top") +
+  scale_y_continuous(limits = c(round(min, 0)-2,round(max, 0)+2)) +
+  scale_x_continuous(limits = c(2000, 2024)) +
+  scale_color_manual(values = c("Male" = "#F4A81D",
+                               "Female" = "#5B2C86",
+                               "Both sexes" = "#009ADE")) +
+  theme_classic()+
+  theme(axis.text=element_text(size=9),
+        axis.text.x = element_text(angle = 0, vjust = 0.5, hjust = 0.5),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        panel.border = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        axis.line.y = element_blank(),
+        axis.line.x = element_line(color = "darkgrey",linetype = 3),
+        panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+        panel.grid = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        strip.background = element_blank(),
+        strip.text = element_text(size = 10)
+)
+  
+```
+
+\newpage
+
+Top causes of death, 2021
+\
+\normalsize Deaths per 100,000 population
+\vspace{-0.5cm} 
+```{r cod2021, fig.height=5, fig.align='center', fig.width=9}
+
+cod <- cod21 %>% 
+  filter(country=="Afghanistan" & FLAG_TREEMAP==1 & DIM_AGEGROUP_CODE=="TOTAL") %>% 
+  group_by(country, sex) %>%
+  arrange(region, sex, desc(VAL_DEATHS_RATE100K_NUMERIC)) %>%
+  slice(1:10)
+
+names <- cod %>% 
+  filter(sex=="Female") %>% 
+  arrange(VAL_DEATHS_RATE100K_NUMERIC) %>% 
+  pull(DIM_GHECAUSE_TITLE)
+color_gradient <- colorRampPalette(c("#d0dde3", "#00205C"))(10)
+names(color_gradient) <- names
+
+codf <- cod %>% 
+  filter(sex=="Female") %>% 
+  ggplot(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = VAL_DEATHS_RATE100K_NUMERIC, fill = DIM_GHECAUSE_TITLE))+
+  geom_text(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = -10, label = round(VAL_DEATHS_RATE100K_NUMERIC, 1)), size = 2.5) +
+  geom_bar(stat = "identity", show.legend = F, width = 0.8) +
+  coord_flip() +
+  scale_fill_manual(values = color_gradient) +
+  labs(title = "Female") +
+  theme_classic()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 8, hjust = 0, color = "black")
+  )
+
+names <- cod %>% 
+  filter(sex=="Male") %>% 
+  arrange(VAL_DEATHS_RATE100K_NUMERIC) %>% 
+  pull(DIM_GHECAUSE_TITLE)
+color_gradient <- colorRampPalette(c("#d0dde3", "#00205C"))(10)
+names(color_gradient) <- names
+
+codm <- cod %>% 
+  filter(sex=="Male") %>% 
+  ggplot(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = VAL_DEATHS_RATE100K_NUMERIC, fill = DIM_GHECAUSE_TITLE))+
+  geom_text(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = -10, label = round(VAL_DEATHS_RATE100K_NUMERIC, 1)), size = 2.5) +
+  geom_bar(stat = "identity", show.legend = F, width = 0.8) +
+  coord_flip() +
+  scale_fill_manual(values = color_gradient) +
+  labs(title = "Male") +
+  theme_classic()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 8, hjust = 0, color = "black")
+  )
+
+patchwork::wrap_plots(codf, codm, ncol = 2)
+
+
+names <- cod %>% 
+  filter(sex=="Both sexes") %>% 
+  arrange(VAL_DEATHS_RATE100K_NUMERIC) %>% 
+  pull(DIM_GHECAUSE_TITLE)
+color_gradient <- colorRampPalette(c("#d0dde3", "#00205C"))(10)
+names(color_gradient) <- names
+
+codb <- cod %>% 
+  filter(sex=="Both sexes") %>% 
+  ggplot(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = VAL_DEATHS_RATE100K_NUMERIC, fill = DIM_GHECAUSE_TITLE))+
+  geom_text(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = -10, label = round(VAL_DEATHS_RATE100K_NUMERIC, 1)), size = 2.5) +
+  geom_bar(stat = "identity", show.legend = F, width = 0.8) +
+  coord_flip() +
+  scale_fill_manual(values = color_gradient) +
+  labs(title = "Both sexes") +
+  theme_classic()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 8, hjust = 0, color = "black")
+  )
+```
+
+```{r cod2021_, fig.height=5, fig.align='center', fig.width=9}
+
+cod_ <- cod21 %>% 
+  filter(country=="Afghanistan" & FLAG_LEVEL==1 & DIM_AGEGROUP_CODE=="TOTAL" & sex =="Both sexes") 
+  
+names <- cod_ %>% 
+  arrange(VAL_DEATHS_RATE100K_NUMERIC) %>% 
+  pull(DIM_GHECAUSE_TITLE)
+color_gradient <- colorRampPalette(c("#d0dde3", "#00205C"))(4)
+names(color_gradient) <- names
+
+codgroup <- cod_ %>% 
+  ggplot(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = VAL_DEATHS_RATE100K_NUMERIC, fill = DIM_GHECAUSE_TITLE))+
+  geom_text(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = -30, label = round(VAL_DEATHS_RATE100K_NUMERIC, 1)), size = 2.5) +
+  geom_bar(stat = "identity", show.legend = F, width = 0.8) +
+  coord_flip() +
+  scale_fill_manual(values = color_gradient) +
+  labs(title = "By broad cause, both sexes") +
+  theme_classic()+
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 8, hjust = 0, color = "black")
+  )
+
+patchwork::wrap_plots(codb, codgroup, ncol = 2)
+```
+
+\newpage
+
+\Large Health Statistics: Health Status
+\
+\normalsize Indicator Progress
+\vspace{-0.5cm} 
+```{r health status, fig.height=10.3, fig.width = 8, fig.align='center', message=F, warning=F}
+# ind <- c(
+#   "New HIV infections (per 1000 uninfected population)",
+#   "Incidence of tuberculosis (per 100 000 population per year)",
+#   "Maternal mortality ratio (per 100 000 live births)",
+#   "Under-five mortality rate (probability of dying by age 5 per 1000 live births)",
+#   "Ambient and household air pollution attributable death rate (per 100 000 population, age-standardized)",
+#   "Estimated malaria incidence (per 1000 population at risk)"
+#   )
+
+# codes <- c("SDGHIV",
+#            "MDG_0000000020",
+#            "MDG_0000000026",
+#            "MDG_0000000007",
+#            "SDGAIRBODA",
+#            "MALARIA_EST_INCIDENCE")
+
+getind <- function(){
+  ind <- GET(url = "https://ghoapi.azureedge.net/api/Indicator")
+  ind2 = fromJSON(rawToChar(ind$content))
+  ind3 <- ind2[2]$value
+  return(ind3)
+}
+ind_func <- getind()
+
+response <- GET("https://xmart-api-public.who.int/DATA_/RELAY_MAY2023?$filter=DIM_GEO_CODE_M49%20eq%20'004'")
+resultTxt <- content(response, "text")
+resultJson <- fromJSON(resultTxt, flatten = T)
+# names(resultJson)
+# str(resultJson)
+sdgtest <- resultJson$value 
+
+sdgtest_ <- sdgtest %>% 
+  select(- c("_RecordID", "Sys_RowTitle", "Sys_Version", "Sys_VersionID", "Sys_OriginCode", "Sys_LoadBy", "Sys_CommitDateUtc", 
+             "Sys_FirstLoadBy", "Sys_FirstCommitDateUtc", "Sys_ID", "Sys_BatchID", "Sys_FirstBatchID", "Sys_PK", "OBSERVATION_STATUS")) %>% 
+  filter(DIM_TIME_TYPE != "YEAR_RANGE") %>% 
+  mutate(DIM_TIME = as.numeric(DIM_TIME)) %>% 
+  filter(DIM_TIME>=2000) %>% 
+  left_join(ind_func %>% select(-c(Language)) %>% rename(IND_CODE = IndicatorCode)) %>% 
+  arrange(IndicatorName, DIM_TIME)
+
+# Global Data
+response <- GET("https://xmart-api-public.who.int/DATA_/RELAY_MAY2023?$filter=DIM_GEO_CODE_M49%20eq%20'001'")
+resultTxt <- content(response, "text")
+resultJson <- fromJSON(resultTxt, flatten = T)
+# names(resultJson)
+# str(resultJson)
+sdgtest_glob <- resultJson$value
+
+sdgtest_glob_ <- sdgtest_glob %>% 
+  select(- c("_RecordID", "Sys_RowTitle", "Sys_Version", "Sys_VersionID", "Sys_OriginCode", "Sys_LoadBy", "Sys_CommitDateUtc", 
+             "Sys_FirstLoadBy", "Sys_FirstCommitDateUtc", "Sys_ID", "Sys_BatchID", "Sys_FirstBatchID", "Sys_PK", "OBSERVATION_STATUS")) %>% 
+  filter(DIM_TIME_TYPE != "YEAR_RANGE") %>% 
+  mutate(DIM_TIME = as.numeric(DIM_TIME)) %>% 
+  filter(DIM_TIME>=2000) %>% 
+  left_join(ind_func %>% select(-c(Language)) %>% rename(IND_CODE = IndicatorCode)) %>% 
+  arrange(IndicatorName, DIM_TIME)
+
+sdgtest_all <- rbind(sdgtest_, sdgtest_glob_) %>% 
+  mutate(country = case_when(
+    DIM_GEO_CODE_M49=="001" ~ "Global",
+    DIM_GEO_CODE_M49=="004" ~ "Afghanistan",
+  ))
+
+color_line <- c("Global" = "#80BC00",
+                "Afghanistan" = "#009ADE")
+
+# ind1 <- sdgtest_ %>% 
+ind1 <- sdgtest_all %>% 
+  filter(IndicatorName=="New HIV infections (per 1000 uninfected population)") %>% 
+  ggplot() +
+  labs(title = str_wrap("New HIV infections (per 1000 uninfected population)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+  scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3)
+  )
+
+ind2 <- sdgtest_all %>% 
+  filter(IndicatorName=="Incidence of tuberculosis (per 100 000 population per year)") %>% 
+  ggplot() +
+  labs(title = str_wrap("Incidence of tuberculosis (per 100 000 population per year)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+  scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+
+ind3 <- sdgtest_all %>% 
+  filter(IndicatorName=="Maternal mortality ratio (per 100 000 live births)") %>% 
+  ggplot() +
+  labs(title = str_wrap("Maternal mortality ratio (per 100 000 live births)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+    scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+
+ind4 <- sdgtest_all %>% 
+  filter(IndicatorName=="Under-five mortality rate (probability of dying by age 5 per 1000 live births)" &
+           DIM_MEMBER_1_CODE=="TOTAL") %>% 
+  ggplot() +
+  labs(title = str_wrap("Under-five mortality rate (probability of dying by age 5 per 1000 live births)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+    scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+
+ind5 <- sdgtest_all %>% 
+  filter(IndicatorName== "Neonatal mortality rate (per 1000 live births)") %>% 
+  ggplot() +
+  labs(title = str_wrap("Neonatal mortality rate (per 1000 live births)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+    scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+
+ind6 <- sdgtest_all %>% 
+  filter(IndicatorName=="Estimated malaria incidence (per 1000 population at risk)") %>% 
+  ggplot() +
+  labs(title = str_wrap("Estimated malaria incidence (per 1000 population at risk)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+    scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+  
+wrap_plots(ind1, ind2, ind3, ind4, ind5, ind6, ncol = 2) + plot_layout(guides = "collect") & theme(legend.position = "bottom", legend.title = element_blank())
+
+```
+
+\newpage
+
+\Large Health Statistics: Risk Factors
+\
+\normalsize Indicator Progress
+\vspace{-0.5cm} 
+```{r risk factors, fig.height=10.3, fig.width = 8, fig.align='center', message=F, warning=F}
+
+ind7 <- sdgtest_all %>% 
+  filter(IndicatorName=="Prevalence of hypertension among adults aged 30-79 years, age-standardized" & 
+           DIM_MEMBER_1_CODE=="TOTAL") %>% 
+  ggplot() +
+  labs(title = str_wrap("Prevalence of hypertension among adults aged 30-79 years, age-standardized (%)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+  scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3)
+  )
+
+ind8 <- sdgtest_all %>% 
+  filter(IndicatorName=="Prevalence of obesity among children and adolescents, BMI > +2 standard deviations above the median (crude estimate) (%)"& 
+           DIM_MEMBER_1_CODE=="TOTAL" &
+           DIM_MEMBER_2_CODE=="Y5T19") %>% 
+  ggplot() +
+  labs(title = str_wrap("Prevalence of obesity among children and adolescents (%)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+  scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+
+ind9 <- ind9 <- sdgtest_all %>% 
+  filter(IndicatorName=="Proportion of population with primary reliance on clean fuels and technologies for cooking (%)" &
+           DIM_MEMBER_1_CODE=="TOTAL") %>% 
+  ggplot() +
+  labs(title = str_wrap("Proportion of population with primary reliance on clean fuels and technologies (%)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+    scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+
+ind10 <- sdgtest_all %>% 
+  filter(IndicatorName=="Concentrations of fine particulate matter (PM2.5)" &
+           DIM_MEMBER_1_CODE=="TOTAL") %>% 
+  ggplot() +
+  labs(title = str_wrap("Concentrations of fine particulate matter (PM2.5)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+    scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+
+ind11 <- sdgtest_all %>% 
+  filter(IndicatorName== "Alcohol, total per capita (15+) consumption (in litres of pure alcohol) (SDG Indicator 3.5.2), three-year average"&
+           DIM_MEMBER_1_CODE=="TOTAL") %>% 
+  ggplot() +
+  labs(title = str_wrap("Total alcohol per capita (>= 15 years of age) consumption (litres of pure alcohol)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+    scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+
+ind12 <- sdgtest_all %>% 
+  filter(IndicatorName=="Population with basic handwashing facilities at home (%)"&
+           DIM_MEMBER_1_CODE=="TOTAL") %>% 
+  ggplot() +
+  labs(title = str_wrap("Proportion of population using a hand-washing facility with soap and water (%)", 45))+
+  geom_line(aes(x=DIM_TIME, y = VALUE_NUMERIC, color = country), size = 1)+
+    scale_color_manual(values = color_line)+
+  theme_classic()+
+  theme(
+    plot.title = element_text(size = 11),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+  )
+  
+wrap_plots(ind7, ind8, ind9, ind10, ind11, ind12, ncol = 2) + plot_layout(guides = "collect") & theme(legend.position = "bottom", legend.title = element_blank())
+
+```
+
+\newpage
+\vspace{-0.3cm} 
+\Large WHO Triple Billion progress
+\
+\
+\normalsize Number of people affected (millions)
+```{r tripbil, fig.height=3.5, fig.width = 8, fig.align='center'}
+# names(resultJson)
+# str(resultJson)
+# all_datasets <- resultJson$value
+response <- GET("https://xmart-api-public.who.int/DATA_/RELAY_3B")
+response <- GET("https://xmart-api-public.who.int/DATA_/RELAY_3B_DATA?$filter=DIM_GEO_CODE_M49%20eq%20'004'")
+
+resultTxt <- content(response, "text")
+resultJson <- fromJSON(resultTxt, flatten = T)
+tripb <- resultJson$value 
+
+tripb_ <- tripb %>% 
+  group_by(DIM_GEO_CODE_M49, TRIPLE_BILLION, DIM_TIME) %>% 
+  summarise(contrib = sum(COUNT_N)) %>% 
+  ungroup() %>% 
+  mutate(year = as.numeric(DIM_TIME)) %>% 
+  mutate(tb = case_when(
+    TRIPLE_BILLION=="HPOP" ~ "Healthier Populations",
+    TRIPLE_BILLION=="HEP" ~ "Health Emergencies Protection",
+    TRIPLE_BILLION=="UHC" ~ "Universal Health Coverage"
+  )) %>% 
+  mutate(contrib_m = round(contrib/1000000, 1))
+  
+tripb_  %>% 
+  filter(year<=2025) %>% 
+  ggplot() +
+  geom_line(aes(x=year, y = contrib_m, color = tb), show.legend = F, size = 1)+
+  geom_text(data = tripb_ %>% filter(year==2025),
+            aes(x = 2026, y = contrib_m, label = paste0(contrib_m, "m \n(", tb, ")"), color = tb), show.legend = F, size = 3) +
+  scale_x_continuous(breaks = c(2018,2019, 2020, 2021, 2022, 2023, 2024, 2025), limits = c(2018, 2027)) +
+  scale_color_manual(values = c("Healthier Populations" = "#5B2C86",
+                                "Health Emergencies Protection" = "#A6228C",
+                                "Universal Health Coverage" = "#80BC00"))+
+  theme_classic() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.y = element_blank(),
+    axis.line.x = element_line(color = "darkgrey",linetype = 3),
+    panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3),
+    legend.title = element_blank(),
+    legend.position = "top"
+  )
+```
+\small 
+In Afghanistan, by 2025 the number of additional people projected to be: enjoying better health and wellbeing is 10.6 million; covered by essential services and not experiencing financial hardship is 1.2 million; and protected from health emergencies is 13.2 million.
+\
+\
+\
+\normalsize Healthier Populations - individual indicator contributions (millions)
+```{r hpopcontrib, fig.align='center', fig.width = 8, fig.height=4}
+all_plt_dat <- arrow::read_parquet("C:\\Users\\samra\\Documents\\WHS_app\\input\\2024-03-26-10-06_summary.parquet") %>%
+  mutate(country = whoville::iso3_to_names(aggregate_id),
+         country = ifelse(is.na(country),
+                          case_when(
+                            aggregate_id=="global" ~"Global",
+                            aggregate_id=="AFR" ~"African Region",
+                            aggregate_id=="AMR" ~"Region of the Americas",
+                            aggregate_id=="EMR" ~"Eastern Mediterranean Region",
+                            aggregate_id=="EUR" ~"European Region",
+                            aggregate_id=="SEAR" ~"South-East Asia Region",
+                            aggregate_id=="WPR" ~"Western Pacific Region"
+                          ),
+                          country)
+  ) %>%
+  mutate(
+    contribution = mean_contribution,
+    contribution_mln = contribution / 1e6
+  )
+config_all <- config::get(
+  file = "C:\\Users\\samra\\Documents\\WHS_app\\input\\all.yml",
+  config = Sys.getenv("USER")
+)
+
+ind_labels <- openxlsx::readWorkbook("C:\\Users\\samra\\Documents\\WHS_app\\input\\indicator_labels WHS 2.xlsx")
+
+get_inds <- function(get_forecast_inds = TRUE, get_billion_inds = FALSE) {
+  stopifnot(
+    "Exactly one of 'get_forecast_inds' and 'get_billion_inds' can be TRUE" =
+      xor(get_forecast_inds, get_billion_inds)
+  )
+  
+  if (get_forecast_inds) {
+    inds_possible <- list(
+      uhc = billionaiRe::billion_ind_codes("uhc") %>%
+        purrr::discard(~.x %in% c("hwf", "fh")),
+      hpop = billionaiRe::billion_ind_codes("hpop"),
+      hep = billionaiRe::billion_ind_codes("hep", include_subindicators = FALSE) %>%
+        purrr::discard(~stringr::str_ends(.x, "_campaign")) %>%
+        # don't need since we estimate 'detect_respond' directly
+        purrr::discard(~.x %in% c("detect", "respond", "notify")) %>%
+        purrr::discard(~.x %in% c("surviving_infants"))
+    )
+  }
+  else if (get_billion_inds) {
+    inds_possible <- list(
+      uhc = billionaiRe::billion_ind_codes("uhc") %>%
+        purrr::discard(~.x %in% c("doctors", "nurses")),
+      hpop = billionaiRe::billion_ind_codes("hpop"),
+      hep = billionaiRe::billion_ind_codes("hep", include_subindicators = FALSE) %>%
+        # don't need since we estimate 'detect_respond' directly
+        purrr::discard(~.x %in% c("detect", "respond", "notify")) %>%
+        purrr::discard(~.x %in% c("surviving_infants"))
+    )
+  }
+  
+  return(inds_possible)
+}
+inds <- get_inds(get_forecast_inds = FALSE, get_billion_inds = TRUE)
+inds$uhc <- c(inds$uhc, "population")
+inds$hep <- config_all$hep_intermediate_inds
+inds_summary <- c("hpop" = "hpop_healthier", "uhc" = "uhc_billion", "hep" = "hep_idx")
+
+inds_all <- inds %>%
+  unlist(use.names = FALSE) %>%
+  unique() %>%
+  c(inds_summary) %>%
+  unname()
+
+# country = "Thailand"; country_iso = "THA"
+
+`%!in%` = Negate(`%in%`)
+
+country_ <- "Afghanistan"
+
+all_plt_dat <- all_plt_dat %>% 
+      filter(
+        country == country_,
+        scenario == "baseline",
+        ind %in% inds_all,
+        year >= config_all$required_start_year,
+        year <= 2025,
+        year > 2017
+      ) %>%
+      left_join(ind_labels, by = c("ind", "billion")) %>%
+      mutate(name = case_when(name == "Child healthcare" ~ "Child health care", .default = name))
+
+hpop_ind_order <- all_plt_dat %>%
+  filter(year == 2025 & billion == "hpop" & ind != "hpop_healthier") %>%
+  arrange(abs(contribution)) %>%
+  pull(name)
+
+# hpop_ind_colors <- full_color_pal[1:length(hpop_ind_order)]
+# names(hpop_ind_colors) <- hpop_ind_order
+      
+hpop_decomp <- all_plt_dat %>%
+  mutate(ind = factor(name, levels = c(hpop_ind_order, "Population healthier - HPOP Billion"))) %>%
+  filter(billion == "hpop") 
+
+plt_billion = "hpop"
+plt_net_ind = "Population healthier - HPOP Billion"
+# plt_inds_color_pal = hpop_ind_colors
+label_years = config_all$years_label_plot %>% c(2019)
+size_text = 3
+plt_dat = hpop_decomp
+  
+net_dat <- plt_dat %>%
+  filter(ind == plt_net_ind) %>%
+  mutate(
+    point_label = case_when(
+      year %in% label_years ~ contribution_mln %>% round(digits = 0),
+      .default = NA_real_
+      )
+  ) %>%
+  select(ind, year, contribution_mln, point_label)
+  
+calc_label_points <- function(dat) {
+    dat %>%
+      mutate(
+        ind_idx = as.integer(ind),
+        ind_label = ind
+      ) %>%
+      arrange(-ind_idx) %>%
+      mutate(
+        y_upper_bar = cumsum(contribution_mln),
+        y_lower_bar = c(0, y_upper_bar[-n()]),
+        y_midpoint = (y_upper_bar + y_lower_bar) / 2,
+      ) %>%
+      select(ind, ind_idx, ind_label, year, contribution_mln, y_upper_bar, y_lower_bar, y_midpoint)
+  }
+  
+  label_positive_points <- plt_dat %>%
+    filter(year == 2025 & contribution_mln >= 0 & ind != plt_net_ind) %>%
+    calc_label_points()
+  label_negative_points <- plt_dat %>%
+    filter(year == 2025 & contribution_mln < 0 & ind != plt_net_ind) %>%
+    calc_label_points()
+  label_points <- bind_rows(label_positive_points, label_negative_points) %>%
+    mutate(
+      pct_contribution = abs(contribution_mln) / sum(abs(contribution_mln)) * 100,
+      ind_label = case_when(
+        plt_billion == "hep" ~ ind,
+        pct_contribution > 1 ~ ind,
+        .default = NA
+      )
+    )
+  label_ind_in_legend <- label_points %>%
+    filter(is.na(ind_label)) %>%
+    arrange(ind) %>%
+    pull(ind)
+  
+  plt_dat <- plt_dat %>%
+    filter(ind != plt_net_ind) %>%
+    mutate(ind_label = if_else(year == 2025, ind, NA)) %>%
+    select(ind, year, ind_label, contribution_mln)
+  
+target_color <- "#F26829" 
+below <- label_points %>% 
+  filter(contribution_mln < 0) %>% 
+  arrange(contribution_mln) %>% 
+  distinct(ind) %>% pull()
+num_colors <- length(below)
+# Number of colors in the gradient
+color_gradient <- colorRampPalette(c("#feece0", target_color))(num_colors)
+names(color_gradient) <- below
+
+target_color <- "#009ADE"
+above <- label_points %>% 
+  filter(contribution_mln > 0) %>% 
+  arrange(desc(contribution_mln)) %>% 
+  distinct(ind) %>% pull()
+num_colors <- length(above)
+# Number of colors in the gradient
+color_gradient2 <- colorRampPalette(c("#ddeff9", target_color))(num_colors)
+names(color_gradient2) <- above
+
+color_final <- c(color_gradient2, color_gradient)
+ind_sent <- paste(label_ind_in_legend, collapse = ', ')
+nudgeing <- net_dat %>% filter(year==2019) %>% pull(contribution_mln)
+
+plt_dat %>%
+  # filter(year<=2025) %>% 
+    ggplot(aes(x = year, y = contribution_mln)) +
+    geom_col(aes(fill = ind), position = "stack", na.rm = F, show.legend = F) +
+    geom_line(data = net_dat, aes(y = contribution_mln, color = "Net Contribution"),  color = "black") +
+    geom_point(data = net_dat, aes(y = contribution_mln, color = "Net Contribution"), color = "black") +
+    geom_text_repel(
+      data = label_points,
+      mapping = aes(x = 2025.45, y = y_midpoint, label = ind_label), #, color = ind
+      color = "black",
+      # vjust aligns the segments vertically in the middle of each bar section
+      # position = position_stack(vjust = 0.5),
+      na.rm = T,
+      # align all indicator labels at 20301 onwards and only shift vertically
+      direction = "y",
+      # nudge_y = 1,
+      xlim = c(2026, Inf),
+      # still label indicators that are close to equal
+      max.overlaps = 100,
+      # effectively skip drawing line to label
+      # min.segment.length = 100,
+      show.legend = FALSE,
+      size = size_text
+    ) +
+  geom_text_repel(
+    data = net_dat %>% filter(year==2019),
+      aes(x = year, y = contribution_mln, label = "Net contribution"),
+      show.legend = F, na.rm = T, size = 3, color = "black",
+      nudge_y = nudgeing
+    ) +
+    geom_hline(yintercept = 0, linetype = "solid", alpha = 0.5) +
+    scale_fill_manual(
+      values = color_final,
+      breaks = label_ind_in_legend
+    ) +
+    scale_x_continuous(breaks = 2018:2025) +
+    scale_y_continuous(n.breaks = 10) +
+    theme_classic() +
+    # Allow labels to bleed past the canvas boundaries
+    coord_cartesian(clip = 'off') +
+    theme(
+      panel.grid.major.y = element_line(color = "darkgrey"),
+      axis.line.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.line.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.text.x=element_text(size=8),
+      axis.title.x =element_blank(),
+      axis.text.y=element_text(size=8),
+      axis.title.y=element_blank(),
+      plot.title = element_blank(),
+      plot.margin = unit(c(5, 100, 5, 5), "pt"),
+    )
+```
+\small Other indicators below 1% of the total absolute contribution in 2025: `r ind_sent`.
