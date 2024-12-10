@@ -18,7 +18,7 @@ header-includes:
 - \usepackage{fancyhdr} % Allows customization of headers and footers
 - \pagestyle{fancy} % Enable fancy header/footer style
 - \fancyhf{}
-- "\\fancyhead[L]{\\color{whodarkblue} Health data overview   |   Afghanistan} % Add
+- "\\fancyhead[L]{\\color{whodarkblue} Health data overview   |   `r country_`} % Add
   left-aligned content (e.g., section title)"
 - \fancyhead[C]{} % Empty center
 - "\\fancyhead[R]{\\color{whodarkblue}\\thepage} % Add right-aligned content (e.g.,
@@ -27,6 +27,10 @@ header-includes:
 - \renewcommand{\headrulewidth}{0.6pt} % Add a horizontal line with thickness of 0.4pt
 - \setlength{\headheight}{30pt} % Increase header height if needed
 geometry: margin=1.75cm
+params:
+  m49code: NA
+  country_: NA
+  country_iso: NA
 ---
 
 \thispagestyle{empty}
@@ -37,7 +41,7 @@ geometry: margin=1.75cm
 \vspace{1.5cm}
 {\fontsize{50}{60}\selectfont \color{white} Health Data Overview} \\
 \vspace{1.5cm}
-{\fontsize{25}{30}\selectfont \color{wholightblueshade} `r toupper("Afghanistan")`}
+{\fontsize{25}{30}\selectfont \color{wholightblueshade} `r toupper(country_)`}
 
 \vspace*{15cm} 
 
@@ -56,7 +60,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ```{r parameters, echo = FALSE, message = FALSE, include = FALSE, eval = TRUE}
-# list2env(params, .GlobalEnv)
+list2env(params, .GlobalEnv)
 ```
 
 ```{r packages, include=FALSE}
@@ -85,9 +89,9 @@ library(officer)
 load("data_req.rda")
 `%!in%` = Negate(`%in%`)
 
-country_iso = "AFG"
-country_ <- "Afghanistan"
-m49code <- "004"
+# country_iso = "AFG"
+# country_ <- "Afghanistan"
+# m49code <- "004"
 
 lev1 <- cod21 %>%
       filter(FLAG_LEVEL == 1) %>%
@@ -125,23 +129,33 @@ h1 = 9
 ```{r text_values, include=FALSE}
 
 # total population
-total_pop2023 <- as.numeric(pop %>% filter(country == "Afghanistan" & year==2023) %>% pull(totalpop_jul))
-total_pop2050 <- as.numeric(pop %>% filter(country == "Afghanistan" & year==2050) %>% pull(totalpop_jul))
+total_pop2023 <- as.numeric(pop %>% filter(country == country_ & year==2023) %>% pull(totalpop_jul))
+total_pop2050 <- as.numeric(pop %>% filter(country == country_ & year==2050) %>% pull(totalpop_jul))
 total_pop_increase <- round(((as.numeric(total_pop2050) - as.numeric(total_pop2023)) / as.numeric(total_pop2023))*100, digits = 0)
 
 # life expectany
-le_2000 <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == "Afghanistan") %>% pull(NumericValue)
-le_2000_lwr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == "Afghanistan") %>% pull(Low)
-le_2000_upr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == "Afghanistan") %>% pull(High)
+le_2000 <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == country_) %>% pull(NumericValue)
+le_2000_lwr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == country_) %>% pull(Low)
+le_2000_upr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2000 & country == country_) %>% pull(High)
 
-le_2021 <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == "Afghanistan") %>% pull(NumericValue)
-le_2021_lwr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == "Afghanistan") %>% pull(Low)
-le_2021_upr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == "Afghanistan") %>% pull(High)
+le_2019 <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2019 & country == country_) %>% pull(NumericValue)
+le_2019_lwr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2019 & country == country_) %>% pull(Low)
+le_2019_upr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2019 & country == country_) %>% pull(High)
 
-change <- abs(le_2021 - le_2000)
+le_2021 <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == country_) %>% pull(NumericValue)
+le_2021_lwr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == country_) %>% pull(Low)
+le_2021_upr <- lehale %>% filter(IndicatorCode=="WHOSIS_000001" & sex=="Both sexes" & year==2021 & country == country_) %>% pull(High)
+
+change <- abs(le_2019 - le_2000)
 change_text <- case_when(
- le_2021 < le_2000 ~ "decreased by",
- le_2000 < le_2021 ~ "improved by"
+ le_2019 < le_2000 ~ "decreased by",
+ le_2000 < le_2019 ~ "improved by"
+)
+
+change2 <- abs(le_2021 - le_2019)
+change_text2 <- case_when(
+ le_2021 < le_2019 ~ "decreased",
+ le_2019 < le_2021 ~ "improved"
 )
 
 # total number of deaths
@@ -165,7 +179,7 @@ lev1_ <- cod21 %>%
 
 ```{r pop_pyramid, include=F, message=FALSE}
 pop_data <- pop_age %>% 
-  filter(country =="Afghanistan" & year %in% c(2023,2050)) %>% 
+  filter(country == country_ & year %in% c(2023,2050)) %>% 
   mutate(ageg = factor(ageg, 
                        levels = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39",
                                   "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85+")
@@ -231,10 +245,10 @@ dev.off()
 \begin{minipage}{0.45\textwidth}
 \begin{tcolorbox}[colback=wholightblueshadev2, colframe=wholightblueshadev2, title=Overview, coltitle=whodarkblue, fonttitle=\Large\bfseries, height=11cm, boxsep=2mm]
 
-In Afghanistan, the population as of 2023 is `r format(total_pop2023*1000, big.mark = " ")` with a projected increase of `r total_pop_increase`\% to `r format(total_pop2050*1000, big.mark = " ")` by 2050.
+In `r country_`, the population as of 2023 is `r format(total_pop2023*1000, big.mark = " ")` with a projected increase of `r total_pop_increase`\% to `r format(total_pop2050*1000, big.mark = " ")` by 2050.
 \\
 \\
-Life expectancy at birth (years) has `r change_text` `r round(change,1)` years from `r round(le_2000,1)` [`r round(le_2000_lwr,1)` - `r round(le_2000_upr,1)`] years in 2000 to `r round(le_2021,1)` [`r round(le_2021_lwr,1)` - `r round(le_2021_upr,1)`] years in 2021.
+Life expectancy at birth (years) has `r change_text` `r round(change,1)` years from `r round(le_2000,1)` [`r round(le_2000_lwr,1)` - `r round(le_2000_upr,1)`] years in 2000 to `r round(le_2019,1)` [`r round(le_2019_lwr,1)` - `r round(le_2019_upr,1)`] years in 2019. Since 2019, life expectancy has `r change_text2` to `r round(le_2021,1)` [`r round(le_2021_lwr,1)` - `r round(le_2021_upr,1)`] years.
 \\
 \\
 `r country_` had `r format(round(total_deaths), big.mark=" ", scientific=F)` total deaths in 2021; `r lev1_[1,2]`\% of deaths were from `r lev1_[1,1]`; `r lev1_[2,2]`\% were from `r lev1_[2,1]`; `r lev1_[3,2]`\% were from `r lev1_[3,1]`; and `r lev1_[4,2]`\% were from `r lev1_[4,1]`.
@@ -253,7 +267,7 @@ Life expectancy at birth (years) has `r change_text` `r round(change,1)` years f
 ```{r life_exp_bysex, fig.height=4.4, fig.align='center', fig.width=8}
 exp <- lehale %>% 
   filter(IndicatorCode=="WHOSIS_000002" | IndicatorCode=="WHOSIS_000001") %>%
-  filter(country=="Afghanistan") %>% 
+  filter(country == country_) %>% 
   mutate(name = ifelse(IndicatorCode=="WHOSIS_000001", "Life expectancy at birth (years)", "Healthy life expectancy at birth (years)")) %>% 
   select(country, year, sex, name, value = NumericValue) %>% 
   mutate(value = round(value, 1)) %>% 
@@ -300,7 +314,7 @@ ggplot()+
 \includegraphics[width=17cm]{legend_test.PNG}
 \
 \
-Top 10 causes of death, 2000-2021
+Top 10 level 2 causes of death, 2000-2021
 ``` {r top10, fig.height=2.9, fig.align='center'}
 b <- cod21 %>% 
   filter(country == country_ & FLAG_LEVEL==2 & sex=="Both sexes" & DIM_AGEGROUP_CODE=="TOTAL") %>%
@@ -443,11 +457,11 @@ treemap::treemap(data_treemap,
 \includegraphics[width=17cm]{legend_test.PNG}
 \
 \
-\normalsize Top causes of death by sex, 2021
+\normalsize Top 10 detailed causes of death by sex, 2021
 \small   (deaths per 100 000 population)
 ```{r cod2021, fig.height=4, fig.align='center', fig.width=8}
 cod <- cod21 %>% 
-  filter(country=="Afghanistan" & FLAG_TREEMAP==1 & DIM_AGEGROUP_CODE=="TOTAL" & sex!="Both sexes") %>% 
+  filter(country==country_ & FLAG_TREEMAP==1 & DIM_AGEGROUP_CODE=="TOTAL" & sex!="Both sexes") %>% 
   group_by(country, sex) %>%
   arrange(region, sex, desc(VAL_DEATHS_RATE100K_NUMERIC)) %>%
   slice(1:10) 
@@ -463,12 +477,6 @@ codf <- cod %>%
   filter(sex=="Female") %>% 
   left_join(ref) %>% 
   ggplot(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = VAL_DEATHS_RATE100K_NUMERIC, fill = lev1))+
-  # geom_text(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), 
-  #               y = VAL_DEATHS_RATE100K_NUMERIC, 
-  #               label = round(VAL_DEATHS_RATE100K_NUMERIC, 1)),
-  #           size = 3, color = "darkgrey", hjust = 0) +
-  # geom_text(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = -8, label = round(VAL_DEATHS_RATE100K_NUMERIC, 1)),
-  #           size = 2.8, color = "black") +
   geom_bar(stat = "identity", show.legend = F, width = 0.6, color = "black") +
   coord_flip() +
   scale_fill_manual(values = colors) +
@@ -490,12 +498,6 @@ codm <- cod %>%
   filter(sex=="Male") %>% 
   left_join(ref) %>% 
   ggplot(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = VAL_DEATHS_RATE100K_NUMERIC, fill = lev1))+
-  # geom_text(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), 
-  #               y = VAL_DEATHS_RATE100K_NUMERIC, 
-  #               label = round(VAL_DEATHS_RATE100K_NUMERIC, 1)),
-  #           size = 3, color = "darkgrey", hjust = 0) +
-  # geom_text(aes(x=reorder(str_wrap(DIM_GHECAUSE_TITLE, 20), VAL_DEATHS_RATE100K_NUMERIC), y = -14, label = round(VAL_DEATHS_RATE100K_NUMERIC, 1)), 
-  #           size = 2.8, color = "black") +
   geom_bar(stat = "identity", show.legend = F, width = 0.6, color = "black") +
   coord_flip() +
   scale_fill_manual(values = colors) +
@@ -536,11 +538,6 @@ d3 <- data_pyramid %>%
 max_lim <- max(d3$daly_100)
 d3$daly_100 <- ifelse(d3$sex == "Female", d3$daly_100 *-1, d3$daly_100)
 min_lim <- min(d3$daly_100)
-
-# max_lim <- max(d3$VAL_DALY_COUNT_NUMERIC)
-# d3$VAL_DALY_COUNT_NUMERIC <- ifelse(d3$sex == "Female", d3$VAL_DALY_COUNT_NUMERIC *-1, d3$VAL_DALY_COUNT_NUMERIC)
-# min_lim <- min(d3$VAL_DALY_COUNT_NUMERIC)
-
 
 # make plot
 ggplot() + 
@@ -590,7 +587,6 @@ ind_func <- getind()
 
 url <- paste0("https://xmart-api-public.who.int/DATA_/RELAY_MAY2023?$filter=DIM_GEO_CODE_M49%20eq%20'", m49code, "'")
 response <- GET(url)
-# response <- GET("https://xmart-api-public.who.int/DATA_/RELAY_MAY2023?$filter=IND_UUID%20eq%20'8074BD9'")
 resultTxt <- content(response, "text")
 resultJson <- fromJSON(resultTxt, flatten = T)
 sdgtest <- resultJson$value 
@@ -611,39 +607,59 @@ sdgtest_ <- sdgtest %>%
 sdg_ref <- read.csv("sdg_ref_final.csv")
 dec_ref <- readxl::read_xlsx("Rounding_WHS2024.xlsx")
 ```
-\large Health Statistics: Health Status \normalsize (selected indicators)
+\large Health Statistics: Health Status
 \vspace{-0.5cm}
 ```{r health status, fig.height=10.3, fig.width = 8, fig.align='center', message=F, warning=F}
 sdg_hstat <- sdg_ref %>% 
   filter(group=="health status") %>% 
-  select(IND_UUID, DIM_MEMBER_1_CODE, DIM_MEMBER_2_CODE, increase_good) %>% 
+  select(IND_UUID, DIM_MEMBER_1_CODE, DIM_MEMBER_2_CODE, increase_good, sort) %>% 
   left_join(sdgtest_)
 
 hstat <- rbind(
-  sdg_hstat %>% group_by(IND_UUID) %>% top_n(1, DIM_TIME) %>% mutate(year = "new"),
+  sdg_hstat %>% group_by(IND_UUID) %>% filter(DIM_TIME<=2024) %>% top_n(1, DIM_TIME) %>% mutate(year = "new"),
   sdg_hstat %>% group_by(IND_UUID) %>% top_n(-1, DIM_TIME)%>% mutate(year = "old")
 ) 
 hstat_ <- hstat %>% 
-  select(IND_UUID, IND_CODE, year, VALUE_NUMERIC) %>% 
+  select(IND_UUID, IND_CODE, year, VALUE_NUMERIC, sort) %>% 
   pivot_wider(values_from = VALUE_NUMERIC, names_from = year) %>% 
   mutate(perc = ((new-old)/old)*100) %>% 
   mutate(perc_abs = abs(perc)) %>% 
-  arrange(desc(perc_abs)) %>% 
+  # arrange(desc(perc_abs)) %>% 
+  arrange(sort) %>% 
   ungroup() %>% 
-  slice(1:6) %>% 
-  mutate(graph = 1,
-         row = row_number())
+  # slice(1:6) %>% 
+  mutate(
+  #   graph = 1,
+    row = row_number())
 
-hstat_final <- hstat %>% left_join(hstat_)
+hstat_final <- hstat %>% left_join(hstat_) %>% arrange(sort)
   
-ind_hstat <- hstat_final %>% filter(graph==1) %>% arrange(row) %>% distinct(IND_UUID) %>%  pull(IND_UUID)
+ind_hstat <- hstat_final %>% 
+  # filter(graph==1) %>% 
+  # arrange(row) %>%
+  distinct(IND_UUID) %>%  pull(IND_UUID)
+
+yearchange <- hstat %>% 
+  select(IND_UUID, year, DIM_TIME) %>% 
+  pivot_wider(names_from = year, values_from = DIM_TIME) %>% 
+  mutate(flag_onedata = ifelse(new==old, 1, 0))
+
+adjusth <- hstat %>% 
+  select(IND_UUID, year, VALUE_NUMERIC) %>% 
+  pivot_wider(names_from = year, values_from = VALUE_NUMERIC) %>% 
+  left_join(yearchange %>% select(flag_onedata)) %>% 
+  mutate(flag_nochange = ifelse(new==old & flag_onedata==0, 1, 0))
+
+hs_plots <- list()
 
 for (i in ind_hstat){
   
   message(i)
   name <- sdg_ref %>% filter(IND_UUID==i) %>% pull(website_name) ; message(name)
-  plot_num <- hstat_final %>% filter(IND_UUID==i) %>% pull(row); message(plot_num)
-  data_i <- hstat_final %>% filter(IND_UUID==i)
+  plot_num <- hstat_final %>% filter(IND_UUID==i) %>% distinct(row) %>% pull(row); message(plot_num)
+  flag <- yearchange %>% filter(IND_UUID==i) %>% pull(flag_onedata)
+  flagh <- adjusth %>% filter(IND_UUID==i) %>% pull(flag_nochange)
+  data_i <- hstat_final %>% filter(IND_UUID==i) %>% select(-(year)) %>% distinct()
   ind_code <- hstat_final %>% filter(IND_UUID==i) %>% distinct(IND_CODE) %>% pull()
   dec_num <- dec_ref %>% filter(DimensionMemberCode==ind_code) %>% pull(decimals); dec_num <- as.numeric(dec_num)
   
@@ -672,8 +688,6 @@ for (i in ind_hstat){
     geom_point(color = "#009ADE", size = 2)+
     # geom_text_repel(aes(x=DIM_TIME, y = VALUE_NUMERIC, label = sprintf('%.1f', round(VALUE_NUMERIC, dec_num)))) +
     geom_text_repel(aes(x=DIM_TIME, y = VALUE_NUMERIC, label = format(round(VALUE_NUMERIC, dec_num), big.mark = " ", nsmall = dec_num))) +
-    annotate("label", x=max_year, y = mid_value, label = paste0(arrow_code, " ", perc_label, "%"), 
-             color = color_code, label.padding = unit(0.8, "lines"), label.r = unit(0.8, "lines")) +
     scale_x_continuous(limits = c(2000, 2025), breaks = c(min_year, max_year), n.breaks = 3)+
     scale_y_continuous(labels=function(x) format(x, big.mark = " ", scientific = FALSE, nsmall = dec_num))+
     theme_classic()+
@@ -689,48 +703,96 @@ for (i in ind_hstat){
     panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3)
   )
   
-  assign(paste0("ind", plot_num), plot)
+  if(flag==0){
+    if(flagh==0){
+      plot <- plot +
+        annotate("label", x=max_year, y = mid_value, label = paste0(arrow_code, " ", perc_label, "%"), 
+                 color = color_code, label.padding = unit(0.8, "lines"), label.r = unit(0.8, "lines"))
+    }else{
+      plot <- plot +
+        annotate("label", x=max_year, y = mid_value, label = paste0(arrow_code, " ", perc_label, "%"), 
+                 vjust = -0.5,
+                 color = color_code, label.padding = unit(0.8, "lines"), label.r = unit(0.8, "lines"))
+    }
+  }
+  
+  # assign(paste0("hsp_", plot_num), plot)
+  
+  hs_plots[[plot_num]] <- plot
 }
+n_hs_plots <- length(hs_plots)
 
-wrap_plots(ind1, ind2, ind3, ind4, ind5, ind6, ncol = 2)
+if(n_hs_plots>6){include_hs_2nd = T}else{include_hs_2nd = F}
+
+if(n_hs_plots>=6){
+  wrap_plots(hs_plots[1:6], ncol = 2)
+}else{
+  wrap_plots(hs_plots[1:n_hs_plots], ncol = 2)
+}
 ```
 
+```{r health status2, fig.height=10.3, fig.width = 8, fig.align='center', message=F, warning=F, include = include_hs_2nd}
+if(n_hs_plots>12){include_hs_3rd = T}else{include_hs_3rd = F}
+
+if(n_hs_plots>=12){
+  wrap_plots(hs_plots[7:12], ncol = 2)
+}else{
+  wrap_plots(hs_plots[7:n_hs_plots], ncol = 2)
+}
+```
+
+```{r health status3, fig.height=3.5, fig.width = 8, fig.align='center', message=F, warning=F, include = include_hs_3rd}
+wrap_plots(hs_plots[13:n_hs_plots], ncol = 2)
+```
 \newpage
 
-\large Health Statistics: Risk Factors \normalsize (selected indicators)
+\large Health Statistics: Risk Factors
 \vspace{-0.5cm}
 ```{r risk factors, fig.height=10.3, fig.width = 8, fig.align='center', message=F, warning=F}
 
 sdg_risk <- sdg_ref %>% 
   filter(group=="risk factors") %>% 
-  select(IND_UUID, DIM_MEMBER_1_CODE, DIM_MEMBER_2_CODE, increase_good) %>% 
+  select(IND_UUID, DIM_MEMBER_1_CODE, DIM_MEMBER_2_CODE, increase_good, sort) %>% 
   left_join(sdgtest_)
 
 risk <- rbind(
-  sdg_risk %>% group_by(IND_UUID) %>% top_n(1, DIM_TIME) %>% mutate(year = "new"),
+  sdg_risk %>% group_by(IND_UUID) %>% filter(DIM_TIME<=2024) %>% top_n(1, DIM_TIME) %>% mutate(year = "new"),
   sdg_risk %>% group_by(IND_UUID) %>% top_n(-1, DIM_TIME)%>% mutate(year = "old")
 ) 
 risk_ <- risk %>% 
-  select(IND_UUID, IND_CODE, year, VALUE_NUMERIC) %>% 
+  select(IND_UUID, IND_CODE, year, VALUE_NUMERIC, sort) %>% 
   pivot_wider(values_from = VALUE_NUMERIC, names_from = year) %>% 
   mutate(perc = ((new-old)/old)*100) %>% 
   mutate(perc_abs = abs(perc)) %>% 
-  arrange(desc(perc_abs)) %>% 
+  # arrange(desc(perc_abs)) %>% 
+  arrange(sort) %>% 
   ungroup() %>% 
-  slice(1:6) %>% 
-  mutate(graph = 1,
+  # slice(1:6) %>% 
+  mutate(
+    # graph = 1,
          row = row_number())
 
-risk_final <- risk %>% left_join(risk_)
+risk_final <- risk %>% left_join(risk_) %>% arrange(sort)
   
-ind_risk <- risk_final %>% filter(graph==1) %>% arrange(row) %>% distinct(IND_UUID) %>%  pull(IND_UUID)
+ind_risk <- risk_final %>% 
+  # filter(graph==1) %>% 
+  # arrange(row) %>% 
+  distinct(IND_UUID) %>% pull(IND_UUID)
+
+yearchange <- risk %>% 
+  select(IND_UUID, year, DIM_TIME) %>% 
+  pivot_wider(names_from = year, values_from = DIM_TIME) %>% 
+  mutate(flag_onedata = ifelse(new==old, 1, 0))
+
+rk_plots <- list()
 
 for (i in ind_risk){
   
   message(i)
   name <- sdg_ref %>% filter(IND_UUID==i) %>% pull(website_name) ; message(name)
-  plot_num <- risk_final %>% filter(IND_UUID==i) %>% pull(row); message(plot_num)
-  data_i <- risk_final %>% filter(IND_UUID==i)
+  plot_num <- risk_final %>% filter(IND_UUID==i) %>% distinct(row) %>% pull(row); message(plot_num)
+  flag <- yearchange %>% filter(IND_UUID==i) %>% pull(flag_onedata)
+  data_i <- risk_final %>% filter(IND_UUID==i) %>% select(-(year)) %>% distinct()
   ind_code <- risk_final %>% filter(IND_UUID==i) %>% distinct(IND_CODE) %>% pull()
   dec_num <- dec_ref %>% filter(DimensionMemberCode==ind_code) %>% pull(decimals); dec_num <- as.numeric(dec_num)
   
@@ -757,10 +819,7 @@ for (i in ind_risk){
     labs(title = str_wrap(name, 50))+
     geom_line(color = "#009ADE", size = 1)+
     geom_point(color = "#009ADE", size = 2)+
-    # geom_text_repel(aes(x=DIM_TIME, y = VALUE_NUMERIC, label = format(sprintf('%.1f', round(VALUE_NUMERIC, 1)), big.mark = ","))) +
     geom_text_repel(aes(x=DIM_TIME, y = VALUE_NUMERIC, label = format(round(VALUE_NUMERIC, dec_num), big.mark = " ", nsmall = dec_num))) +
-    annotate("label", x=max_year, y = mid_value, label = paste0(arrow_code, " ", perc_label, "%"), 
-             color = color_code, label.padding = unit(0.8, "lines"), label.r = unit(0.8, "lines")) +
     scale_x_continuous(limits = c(2000, 2025), breaks = c(min_year, max_year), n.breaks = 3)+
     scale_y_continuous(labels=function(x) format(x, big.mark = " ", scientific = FALSE, nsmall = dec_num))+
     theme_classic()+
@@ -776,10 +835,41 @@ for (i in ind_risk){
     panel.grid.major = element_line(color = "darkgrey",size = 0.5,linetype = 3)
   )
   
-  assign(paste0("ind", plot_num), plot)
+  if(flag==0){
+    plot <- plot +
+          annotate("label", x=max_year, y = mid_value, label = paste0(arrow_code, " ", perc_label, "%"), 
+             color = color_code, label.padding = unit(0.8, "lines"), label.r = unit(0.8, "lines"))
+  }
+  
+  rk_plots[[plot_num]] <- plot
+  
+  # assign(paste0("ind", plot_num), plot)
 }
+n_rk_plots <- length(rk_plots)
 
-wrap_plots(ind1, ind2, ind3, ind4, ind5, ind6, ncol = 2)
+if(n_rk_plots>6){include_rk_2nd = T}else{include_rk_2nd = F}
+
+if(n_rk_plots>=6){
+  wrap_plots(rk_plots[1:6], ncol = 2)
+}else{
+  wrap_plots(rk_plots[1:n_rk_plots], ncol = 2)
+}
+```
+
+```{r risk factors2, fig.height=10.3, fig.width = 8, fig.align='center', message=F, warning=F, include = include_rk_2nd}
+if(n_rk_plots>12){include_rk_3rd = T}else{include_rk_3rd = F}
+
+if(n_rk_plots>=12){
+  wrap_plots(rk_plots[7:12], ncol = 2)
+}else{
+  wrap_plots(rk_plots[7:n_rk_plots], ncol = 2)
+}
+```
+
+```{r risk factors3, fig.height=3.5, fig.width = 8, fig.align='center', message=F, warning=F, include = include_rk_3rd}
+if(n_rk_plots>12){
+wrap_plots(rk_plots[13:n_rk_plots], ncol = 2)
+}
 ```
 \newpage
 
@@ -789,25 +879,26 @@ wrap_plots(ind1, ind2, ind3, ind4, ind5, ind6, ncol = 2)
 
 sdg_sc <- sdg_ref %>% 
   filter(group=="service coverage") %>% 
-  select(IND_UUID, DIM_MEMBER_1_CODE, DIM_MEMBER_2_CODE, increase_good) %>% 
+  select(IND_UUID, DIM_MEMBER_1_CODE, DIM_MEMBER_2_CODE, increase_good, sort) %>% 
   left_join(sdgtest_)
 
 sc <- rbind(
-  sdg_sc %>% group_by(IND_UUID) %>% top_n(1, DIM_TIME) %>% mutate(year = "new"),
+  sdg_sc %>% group_by(IND_UUID) %>% filter(DIM_TIME<=2024) %>% top_n(1, DIM_TIME) %>% mutate(year = "new"),
   sdg_sc %>% group_by(IND_UUID) %>% top_n(-1, DIM_TIME)%>% mutate(year = "old")
 ) 
 sc_ <- sc %>% 
-  select(IND_UUID, IND_CODE, year, VALUE_NUMERIC) %>% 
+  select(IND_UUID, IND_CODE, year, VALUE_NUMERIC, sort) %>% 
   pivot_wider(values_from = VALUE_NUMERIC, names_from = year) %>% 
   mutate(perc = ((new-old)/old)*100) %>% 
   mutate(perc_abs = abs(perc)) %>% 
-  arrange(desc(perc_abs)) %>% 
+  # arrange(desc(perc_abs)) %>% 
+  arrange(sort) %>% 
   ungroup() %>% 
   # slice(1:6) %>% 
   mutate(graph = 1,
          row = row_number())
 
-sc_final <- sc %>% left_join(sc_)
+sc_final <- sc %>% left_join(sc_) %>% arrange(sort)
   
 ind_sc <- sc_final %>% filter(graph==1) %>% arrange(row) %>% distinct(IND_UUID) %>%  pull(IND_UUID)
 
@@ -928,25 +1019,26 @@ wrap_plots(plot_list, ncol = 2)
 
 sdg_hs <- sdg_ref %>% 
   filter(group=="health systems") %>% 
-  select(IND_UUID, DIM_MEMBER_1_CODE, DIM_MEMBER_2_CODE, increase_good) %>% 
+  select(IND_UUID, DIM_MEMBER_1_CODE, DIM_MEMBER_2_CODE, increase_good, sort) %>% 
   left_join(sdgtest_)
 
 hs <- rbind(
-  sdg_hs %>% group_by(IND_UUID) %>% top_n(1, DIM_TIME) %>% mutate(year = "new"),
+  sdg_hs %>% group_by(IND_UUID) %>% filter(DIM_TIME<=2024) %>% top_n(1, DIM_TIME) %>% mutate(year = "new"),
   sdg_hs %>% group_by(IND_UUID) %>% top_n(-1, DIM_TIME)%>% mutate(year = "old")
 ) 
 hs_ <- hs %>% 
-  select(IND_UUID, IND_CODE, year, VALUE_NUMERIC) %>% 
+  select(IND_UUID, IND_CODE, year, VALUE_NUMERIC, sort) %>% 
   pivot_wider(values_from = VALUE_NUMERIC, names_from = year) %>% 
   mutate(perc = ((new-old)/old)*100) %>% 
-  mutate(perc_abs = abs(perc)) %>% 
-  arrange(desc(perc_abs)) %>% 
+  mutate(perc_abs = abs(perc)) %>%
+  arrange(sort) %>% 
+  # arrange(desc(perc_abs)) %>% 
   ungroup() %>% 
   # slice(1:6) %>% 
   mutate(graph = 1,
          row = row_number())
 
-hs_final <- hs %>% left_join(hs_)
+hs_final <- hs %>% left_join(hs_) %>% arrange(sort)
   
 ind_hs <- hs_final %>% filter(graph==1) %>% arrange(row) %>% distinct(IND_UUID) %>%  pull(IND_UUID)
 
@@ -1061,8 +1153,9 @@ wrap_plots(plot_list, ncol = 2)
 \newpage
 \normalsize Triple Billions - Number of people affected (millions)
 ```{r tripbil, fig.height=3.4, fig.width = 8, fig.align='center'}
-response <- GET("https://xmart-api-public.who.int/DATA_/RELAY_3B_DATA?$filter=DIM_GEO_CODE_M49%20eq%20'004'")
 
+url <- paste0("https://xmart-api-public.who.int/DATA_/RELAY_3B_DATA?$filter=DIM_GEO_CODE_M49%20eq%20'", m49code, "'")
+response <- GET(url)
 resultTxt <- content(response, "text")
 resultJson <- fromJSON(resultTxt, flatten = T)
 tripb <- resultJson$value 
@@ -1106,8 +1199,12 @@ tripb_  %>%
     legend.title = element_blank(),
     legend.position = "top"
   )
+
+uhc_contrib <- tripb_ %>% filter(DIM_TIME=="2025" & TRIPLE_BILLION=="UHC") %>% pull(contrib_m)
+hep_contrib <- tripb_ %>% filter(DIM_TIME=="2025" & TRIPLE_BILLION=="HEP") %>% pull(contrib_m)
+hpop_contrib <- tripb_ %>% filter(DIM_TIME=="2025" & TRIPLE_BILLION=="HPOP") %>% pull(contrib_m)
 ```
-\small In Afghanistan, by 2025 the number of additional people projected to be: enjoying better health and wellbeing is 10.6 million; covered by essential services and not experiencing financial hardship is 1.2 million; and protected from health emergencies is 8 million.
+\small In `r country_`, by 2025 the number of additional people projected to be: enjoying better health and wellbeing is `r hpop_contrib` million; covered by essential services and not experiencing financial hardship is `r uhc_contrib` million; and protected from health emergencies is `r hep_contrib` million.
 \rule{\textwidth}{0.6pt}\color{whodarkblue}
 \normalsize Healthier Populations - individual indicator contributions (millions)
 ```{r hpopcontrib, fig.align='center', fig.width = 8, fig.height=4}
@@ -1380,7 +1477,7 @@ indicator_values$ach <- factor(indicator_values$ach,
                                           )
 
 bh_iso <- ggplot(indicator_values %>% filter(aggregate_id==country_iso), 
-       aes(x=indicator_name, y=country, fill=ach, label=ach, family="calibri")) +
+       aes(x=indicator_name, y=str_wrap(country, 25), fill=ach, label=ach, family="calibri")) +
     geom_tile(color = "black") +
     theme_classic() +
     theme(legend.position = "top",
@@ -1405,7 +1502,7 @@ bh_iso <- ggplot(indicator_values %>% filter(aggregate_id==country_iso),
   scale_x_discrete(position = "top")
 
 bh_reg <- ggplot(indicator_values %>% filter(aggregate_id!=country_iso), 
-       aes(x=indicator_name, y=country, fill=ach, label=ach, family="calibri")) +
+       aes(x=indicator_name, y=str_wrap(country, 25), fill=ach, label=ach, family="calibri")) +
     geom_tile(color = "black", show.legend = F) +
     theme_classic() +
     theme(axis.title = element_blank(),
@@ -1434,12 +1531,12 @@ if(who_region=="SEAR"){
 \
 \large \textcolor{black}{Further Resources}
 \normalsize
-\
-\
-[\textcolor{websitecolor}{WHO Country website}]("https://www.emro.who.int/countries/afg")
-\
-\
-[\textcolor{websitecolor}{WHO Eastern Mediterranean website}]("https://www.emro.who.int")
+<!-- \ -->
+<!-- \ -->
+<!-- [\textcolor{websitecolor}{WHO Country website}]("https://www.emro.who.int/countries/afg") -->
+<!-- \ -->
+<!-- \ -->
+<!-- [\textcolor{websitecolor}{WHO Eastern Mediterranean website}]("https://www.emro.who.int") -->
 \
 \
 [\textcolor{websitecolor}{WHO Global country page}](`r paste0("https://www.who.int/countries/", "AFG")`)
@@ -1460,12 +1557,14 @@ data <- data.frame(
            "Life expectancy and Healthy life expectancy (HALE)",
            "Causes of death",
            "Disease Burden",
+           "Sustainable Development Goals (SDG) Indicators",
            "Triple Billion"),
   website = c("https://population.un.org/wpp/",
               "https://apps.who.int/nha/database",
               "https://www.who.int/data/gho/data/themes/mortality-and-global-health-estimates/ghe-life-expectancy-and-healthy-life-expectancy",
               "https://www.who.int/data/gho/data/themes/mortality-and-global-health-estimates/ghe-leading-causes-of-death",
               "https://www.who.int/data/gho/data/themes/mortality-and-global-health-estimates/global-health-estimates-leading-causes-of-dalys",
+              "https://www.who.int/data/gho/data/indicators",
               "https://data.who.int/dashboards/global-progress/triple-billion"
               ),
   name = c("UNDESA population division, World Population Prospects 2022 \nExtracted: May 2024",
@@ -1473,6 +1572,7 @@ data <- data.frame(
             "World Health Organization, Global Health Estimates \nExtracted: August 2024",
             "World Health Organization, Global Health Estimates \nExtracted: August 2024",
             "World Health Organization, Global Health Estimates, Burden of Disease \nExtracted: August 2024",
+            "World Health Organization, The Global Health Observatory",
             "World Health Organization, Global Progress Dashboard, Triple Billion targets")
 )
 
@@ -1487,7 +1587,7 @@ dt.ft <- hline(dt.ft, part = "header", border = fp_border(color = "gray"))
 dt.ft <- width(dt.ft, j = 1, width = 2, unit = "in")
 dt.ft <- width(dt.ft, j = 2, width = 5, unit = "in")
 dt.ft <- color(dt.ft, j=2, color = "#0771a0", part = "body")
-dt.ft <- fontsize(dt.ft, i = 1:6, j = 1:2, size = 10, part = "body")
+dt.ft <- fontsize(dt.ft, i = 1:7, j = 1:2, size = 10, part = "body")
 dt.ft
 ```
 \
@@ -1501,9 +1601,9 @@ dt.ft
 \
 \
 \begin{tcolorbox}[colback=white, colframe=whodarkblue, height=4cm, boxsep=2mm]
-Date created: 03/12/2024
+Date created: 09/12/2024
 \\
-\textcolor{websitecolor}{https://data.who.int/countries/004}
+\textcolor{websitecolor}{`r paste0("https://data.who.int/countries/", m49code)`}
 \\
 \\
 Disclaimer: Any designations employed or presentation by the user in its use of this website, including tables and maps, do not imply the expression of any opinion whatsoever on the part of the World Health Organization concerning the legal status of any country, territory, city or area or of its authorities, or concerning the delimitation of its frontiers and boundaries.
