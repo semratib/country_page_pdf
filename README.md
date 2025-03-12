@@ -3,7 +3,7 @@ This code creates country profile reports for 194 WHO Member States. The report 
 
 ## Code
 1. "prep datasets.R" assembles all the data needed to run the reports (creates data_req.rda)
-2. "run reports.R" produces all the reports (there are two versions of the report, based on data availability)
+2. "run reports.R" produces all the reports - there are two versions of the report, based on data availability (report.Rmd & report_version_smallpop.Rmd)
 
 ## Data sources
 - Global Health Estimates, cause of death: https://extranet.who.int/xmart4/DEX_CMS/data/GHE_FULL
