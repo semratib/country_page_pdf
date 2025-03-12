@@ -1,0 +1,241 @@
+,Code,Title,ParentDimension,Dimension,ParentCode,ParentTitle
+1,ABW,Aruba,REGION,COUNTRY,AMR,Americas
+2,AFG,Afghanistan,REGION,COUNTRY,EMR,Eastern Mediterranean
+3,AGO,Angola,REGION,COUNTRY,AFR,Africa
+4,AIA,Anguilla,REGION,COUNTRY,AMR,Americas
+5,ALB,Albania,REGION,COUNTRY,EUR,Europe
+6,AND,Andorra,REGION,COUNTRY,EUR,Europe
+7,ARE,United Arab Emirates,REGION,COUNTRY,EMR,Eastern Mediterranean
+8,ARG,Argentina,REGION,COUNTRY,AMR,Americas
+9,ARM,Armenia,REGION,COUNTRY,EUR,Europe
+10,ASM,American Samoa,REGION,COUNTRY,WPR,Western Pacific
+11,ATG,Antigua and Barbuda,REGION,COUNTRY,AMR,Americas
+12,AUS,Australia,REGION,COUNTRY,WPR,Western Pacific
+13,AUT,Austria,REGION,COUNTRY,EUR,Europe
+14,AZE,Azerbaijan,REGION,COUNTRY,EUR,Europe
+15,BDI,Burundi,REGION,COUNTRY,AFR,Africa
+16,BEL,Belgium,REGION,COUNTRY,EUR,Europe
+17,BEN,Benin,REGION,COUNTRY,AFR,Africa
+18,BES,"Bonaire, Saint Eustatius and Saba",REGION,COUNTRY,AMR,Americas
+19,BFA,Burkina Faso,REGION,COUNTRY,AFR,Africa
+20,BGD,Bangladesh,REGION,COUNTRY,SEAR,South-East Asia
+21,BGR,Bulgaria,REGION,COUNTRY,EUR,Europe
+22,BHR,Bahrain,REGION,COUNTRY,EMR,Eastern Mediterranean
+23,BHS,Bahamas,REGION,COUNTRY,AMR,Americas
+24,BIH,Bosnia and Herzegovina,REGION,COUNTRY,EUR,Europe
+25,BLR,Belarus,REGION,COUNTRY,EUR,Europe
+26,BLZ,Belize,REGION,COUNTRY,AMR,Americas
+27,BMU,Bermuda,REGION,COUNTRY,AMR,Americas
+28,BOL,Bolivia (Plurinational State of),REGION,COUNTRY,AMR,Americas
+29,BRA,Brazil,REGION,COUNTRY,AMR,Americas
+30,BRB,Barbados,REGION,COUNTRY,AMR,Americas
+31,BRN,Brunei Darussalam,REGION,COUNTRY,WPR,Western Pacific
+32,BTN,Bhutan,REGION,COUNTRY,SEAR,South-East Asia
+33,BWA,Botswana,REGION,COUNTRY,AFR,Africa
+34,CAF,Central African Republic,REGION,COUNTRY,AFR,Africa
+35,CAN,Canada,REGION,COUNTRY,AMR,Americas
+36,CHE,Switzerland,REGION,COUNTRY,EUR,Europe
+37,CHI,Channel islands,NA,COUNTRY,NA,NA
+38,CHL,Chile,REGION,COUNTRY,AMR,Americas
+39,CHN,China,REGION,COUNTRY,WPR,Western Pacific
+40,CIV,Cote d'Ivoire,REGION,COUNTRY,AFR,Africa
+41,CMR,Cameroon,REGION,COUNTRY,AFR,Africa
+42,COD,Democratic Republic of the Congo,REGION,COUNTRY,AFR,Africa
+43,COG,Congo,REGION,COUNTRY,AFR,Africa
+44,COK,Cook Islands,REGION,COUNTRY,WPR,Western Pacific
+45,COL,Colombia,REGION,COUNTRY,AMR,Americas
+46,COM,Comoros,REGION,COUNTRY,AFR,Africa
+47,CPV,Cabo Verde,REGION,COUNTRY,AFR,Africa
+48,CRI,Costa Rica,REGION,COUNTRY,AMR,Americas
+49,CUB,Cuba,REGION,COUNTRY,AMR,Americas
+50,CUW,Curaçao,REGION,COUNTRY,AMR,Americas
+51,CYM,Cayman Islands,REGION,COUNTRY,AMR,Americas
+52,CYP,Cyprus,REGION,COUNTRY,EUR,Europe
+53,CZE,Czechia,REGION,COUNTRY,EUR,Europe
+54,DEU,Germany,REGION,COUNTRY,EUR,Europe
+55,DJI,Djibouti,REGION,COUNTRY,EMR,Eastern Mediterranean
+56,DMA,Dominica,REGION,COUNTRY,AMR,Americas
+57,DNK,Denmark,REGION,COUNTRY,EUR,Europe
+58,DOM,Dominican Republic,REGION,COUNTRY,AMR,Americas
+59,DZA,Algeria,REGION,COUNTRY,AFR,Africa
+60,ECU,Ecuador,REGION,COUNTRY,AMR,Americas
+61,EGY,Egypt,REGION,COUNTRY,EMR,Eastern Mediterranean
+62,ERI,Eritrea,REGION,COUNTRY,AFR,Africa
+63,ESP,Spain,REGION,COUNTRY,EUR,Europe
+64,EST,Estonia,REGION,COUNTRY,EUR,Europe
+65,ETH,Ethiopia,REGION,COUNTRY,AFR,Africa
+66,FIN,Finland,REGION,COUNTRY,EUR,Europe
+67,FJI,Fiji,REGION,COUNTRY,WPR,Western Pacific
+68,FLK,Falkland Islands (Malvinas),REGION,COUNTRY,AMR,Americas
+69,FRA,France,REGION,COUNTRY,EUR,Europe
+70,FRO,Faroe Islands,REGION,COUNTRY,EUR,Europe
+71,FSM,Micronesia (Federated States of),REGION,COUNTRY,WPR,Western Pacific
+72,GAB,Gabon,REGION,COUNTRY,AFR,Africa
+73,GBR,United Kingdom of Great Britain and Northern Ireland,REGION,COUNTRY,EUR,Europe
+74,GEO,Georgia,REGION,COUNTRY,EUR,Europe
+75,GHA,Ghana,REGION,COUNTRY,AFR,Africa
+76,GIB,Gibraltar,REGION,COUNTRY,EUR,Europe
+77,GIN,Guinea,REGION,COUNTRY,AFR,Africa
+78,GLP,Guadeloupe,REGION,COUNTRY,AMR,Americas
+79,GMB,Gambia,REGION,COUNTRY,AFR,Africa
+80,GNB,Guinea-Bissau,REGION,COUNTRY,AFR,Africa
+81,GNQ,Equatorial Guinea,REGION,COUNTRY,AFR,Africa
+82,GRC,Greece,REGION,COUNTRY,EUR,Europe
+83,GRD,Grenada,REGION,COUNTRY,AMR,Americas
+84,GRL,Greenland,REGION,COUNTRY,EUR,Europe
+85,GTM,Guatemala,REGION,COUNTRY,AMR,Americas
+86,GUF,French Guiana,REGION,COUNTRY,AMR,Americas
+87,GUM,Guam,REGION,COUNTRY,WPR,Western Pacific
+88,GUY,Guyana,REGION,COUNTRY,AMR,Americas
+89,HKG,"China, Hong Kong Special Administrative Region",NA,COUNTRY,NA,NA
+90,HND,Honduras,REGION,COUNTRY,AMR,Americas
+91,HRV,Croatia,REGION,COUNTRY,EUR,Europe
+92,HTI,Haiti,REGION,COUNTRY,AMR,Americas
+93,HUN,Hungary,REGION,COUNTRY,EUR,Europe
+94,IDN,Indonesia,REGION,COUNTRY,SEAR,South-East Asia
+95,IMN,Isle of Man,REGION,COUNTRY,EUR,Europe
+96,IND,India,REGION,COUNTRY,SEAR,South-East Asia
+97,IRL,Ireland,REGION,COUNTRY,EUR,Europe
+98,IRN,Iran (Islamic Republic of),REGION,COUNTRY,EMR,Eastern Mediterranean
+99,IRQ,Iraq,REGION,COUNTRY,EMR,Eastern Mediterranean
+100,ISL,Iceland,REGION,COUNTRY,EUR,Europe
+101,ISR,Israel,REGION,COUNTRY,EUR,Europe
+102,ITA,Italy,REGION,COUNTRY,EUR,Europe
+103,JAM,Jamaica,REGION,COUNTRY,AMR,Americas
+104,JOR,Jordan,REGION,COUNTRY,EMR,Eastern Mediterranean
+105,JPN,Japan,REGION,COUNTRY,WPR,Western Pacific
+106,KAZ,Kazakhstan,REGION,COUNTRY,EUR,Europe
+107,KEN,Kenya,REGION,COUNTRY,AFR,Africa
+108,KGZ,Kyrgyzstan,REGION,COUNTRY,EUR,Europe
+109,KHM,Cambodia,REGION,COUNTRY,WPR,Western Pacific
+110,KIR,Kiribati,REGION,COUNTRY,WPR,Western Pacific
+111,KNA,Saint Kitts and Nevis,REGION,COUNTRY,AMR,Americas
+112,KOR,Republic of Korea,REGION,COUNTRY,WPR,Western Pacific
+113,KWT,Kuwait,REGION,COUNTRY,EMR,Eastern Mediterranean
+114,LAO,Lao People's Democratic Republic,REGION,COUNTRY,WPR,Western Pacific
+115,LBN,Lebanon,REGION,COUNTRY,EMR,Eastern Mediterranean
+116,LBR,Liberia,REGION,COUNTRY,AFR,Africa
+117,LBY,Libya,REGION,COUNTRY,EMR,Eastern Mediterranean
+118,LCA,Saint Lucia,REGION,COUNTRY,AMR,Americas
+119,LIE,Liechtenstein,REGION,COUNTRY,EUR,Europe
+120,LKA,Sri Lanka,REGION,COUNTRY,SEAR,South-East Asia
+121,LSO,Lesotho,REGION,COUNTRY,AFR,Africa
+122,LTU,Lithuania,REGION,COUNTRY,EUR,Europe
+123,LUX,Luxembourg,REGION,COUNTRY,EUR,Europe
+124,LVA,Latvia,REGION,COUNTRY,EUR,Europe
+125,MAC,"China, Macao Special Administrative Region",NA,COUNTRY,NA,NA
+126,MAR,Morocco,REGION,COUNTRY,EMR,Eastern Mediterranean
+127,MCO,Monaco,REGION,COUNTRY,EUR,Europe
+128,MDA,Republic of Moldova,REGION,COUNTRY,EUR,Europe
+129,MDG,Madagascar,REGION,COUNTRY,AFR,Africa
+130,MDV,Maldives,REGION,COUNTRY,SEAR,South-East Asia
+131,ME1,The former state union Serbia and Montenegro,NA,COUNTRY,NA,NA
+132,MEX,Mexico,REGION,COUNTRY,AMR,Americas
+133,MHL,Marshall Islands,REGION,COUNTRY,WPR,Western Pacific
+134,MKD,North Macedonia,REGION,COUNTRY,EUR,Europe
+135,MLI,Mali,REGION,COUNTRY,AFR,Africa
+136,MLT,Malta,REGION,COUNTRY,EUR,Europe
+137,MMR,Myanmar,REGION,COUNTRY,SEAR,South-East Asia
+138,MNE,Montenegro,REGION,COUNTRY,EUR,Europe
+139,MNG,Mongolia,REGION,COUNTRY,WPR,Western Pacific
+140,MNP,Northern Mariana Islands,REGION,COUNTRY,WPR,Western Pacific
+141,MOZ,Mozambique,REGION,COUNTRY,AFR,Africa
+142,MRT,Mauritania,REGION,COUNTRY,AFR,Africa
+143,MSR,Montserrat,REGION,COUNTRY,AMR,Americas
+144,MTQ,Martinique,REGION,COUNTRY,AMR,Americas
+145,MUS,Mauritius,REGION,COUNTRY,AFR,Africa
+146,MWI,Malawi,REGION,COUNTRY,AFR,Africa
+147,MYS,Malaysia,REGION,COUNTRY,WPR,Western Pacific
+148,MYT,Mayotte,REGION,COUNTRY,AFR,Africa
+149,NAM,Namibia,REGION,COUNTRY,AFR,Africa
+150,NCL,New Caledonia,REGION,COUNTRY,WPR,Western Pacific
+151,NER,Niger,REGION,COUNTRY,AFR,Africa
+152,NGA,Nigeria,REGION,COUNTRY,AFR,Africa
+153,NIC,Nicaragua,REGION,COUNTRY,AMR,Americas
+154,NIU,Niue,REGION,COUNTRY,WPR,Western Pacific
+155,NLD,Netherlands,REGION,COUNTRY,EUR,Europe
+156,NOR,Norway,REGION,COUNTRY,EUR,Europe
+157,NPL,Nepal,REGION,COUNTRY,SEAR,South-East Asia
+158,NRU,Nauru,REGION,COUNTRY,WPR,Western Pacific
+159,NZL,New Zealand,REGION,COUNTRY,WPR,Western Pacific
+160,OMN,Oman,REGION,COUNTRY,EMR,Eastern Mediterranean
+161,PAK,Pakistan,REGION,COUNTRY,EMR,Eastern Mediterranean
+162,PAN,Panama,REGION,COUNTRY,AMR,Americas
+163,PER,Peru,REGION,COUNTRY,AMR,Americas
+164,PHL,Philippines,REGION,COUNTRY,WPR,Western Pacific
+165,PLW,Palau,REGION,COUNTRY,WPR,Western Pacific
+166,PNG,Papua New Guinea,REGION,COUNTRY,WPR,Western Pacific
+167,POL,Poland,REGION,COUNTRY,EUR,Europe
+168,PRI,Puerto Rico,REGION,COUNTRY,AMR,Americas
+169,PRK,Democratic People's Republic of Korea,REGION,COUNTRY,SEAR,South-East Asia
+170,PRT,Portugal,REGION,COUNTRY,EUR,Europe
+171,PRY,Paraguay,REGION,COUNTRY,AMR,Americas
+172,PSE,"occupied Palestinian territory, including east Jerusalem",REGION,COUNTRY,EMR,Eastern Mediterranean
+173,PYF,French Polynesia,REGION,COUNTRY,WPR,Western Pacific
+174,QAT,Qatar,REGION,COUNTRY,EMR,Eastern Mediterranean
+175,REU,Reunion,REGION,COUNTRY,AFR,Africa
+176,ROU,Romania,REGION,COUNTRY,EUR,Europe
+177,RUS,Russian Federation,REGION,COUNTRY,EUR,Europe
+178,RWA,Rwanda,REGION,COUNTRY,AFR,Africa
+179,SAU,Saudi Arabia,REGION,COUNTRY,EMR,Eastern Mediterranean
+180,SDN,Sudan,REGION,COUNTRY,EMR,Eastern Mediterranean
+181,SDN736,Sudan (former),REGION,COUNTRY,EMR,Eastern Mediterranean
+182,SEN,Senegal,REGION,COUNTRY,AFR,Africa
+183,SGP,Singapore,REGION,COUNTRY,WPR,Western Pacific
+184,SHN,Saint Helena,REGION,COUNTRY,AFR,Africa
+185,SLB,Solomon Islands,REGION,COUNTRY,WPR,Western Pacific
+186,SLE,Sierra Leone,REGION,COUNTRY,AFR,Africa
+187,SLV,El Salvador,REGION,COUNTRY,AMR,Americas
+188,SMR,San Marino,REGION,COUNTRY,EUR,Europe
+189,SOM,Somalia,REGION,COUNTRY,EMR,Eastern Mediterranean
+190,SPM,Saint Pierre and Miquelon,REGION,COUNTRY,AMR,Americas
+191,SRB,Serbia,REGION,COUNTRY,EUR,Europe
+192,SSD,South Sudan,REGION,COUNTRY,AFR,Africa
+193,STP,Sao Tome and Principe,REGION,COUNTRY,AFR,Africa
+194,SUR,Suriname,REGION,COUNTRY,AMR,Americas
+195,SVK,Slovakia,REGION,COUNTRY,EUR,Europe
+196,SVN,Slovenia,REGION,COUNTRY,EUR,Europe
+197,SWE,Sweden,REGION,COUNTRY,EUR,Europe
+198,SWZ,Eswatini,REGION,COUNTRY,AFR,Africa
+199,SXM,Sint Maarten (Dutch part),REGION,COUNTRY,AMR,Americas
+200,SYC,Seychelles,REGION,COUNTRY,AFR,Africa
+201,SYR,Syrian Arab Republic,REGION,COUNTRY,EMR,Eastern Mediterranean
+202,TCA,Turks and Caicos Islands,REGION,COUNTRY,AMR,Americas
+203,TCD,Chad,REGION,COUNTRY,AFR,Africa
+204,TGO,Togo,REGION,COUNTRY,AFR,Africa
+205,THA,Thailand,REGION,COUNTRY,SEAR,South-East Asia
+206,TJK,Tajikistan,REGION,COUNTRY,EUR,Europe
+207,TKL,Tokelau,REGION,COUNTRY,WPR,Western Pacific
+208,TKM,Turkmenistan,REGION,COUNTRY,EUR,Europe
+209,TLS,Timor-Leste,REGION,COUNTRY,SEAR,South-East Asia
+210,TON,Tonga,REGION,COUNTRY,WPR,Western Pacific
+211,TTO,Trinidad and Tobago,REGION,COUNTRY,AMR,Americas
+212,TUN,Tunisia,REGION,COUNTRY,EMR,Eastern Mediterranean
+213,TUR,Türkiye,REGION,COUNTRY,EUR,Europe
+214,TUV,Tuvalu,REGION,COUNTRY,WPR,Western Pacific
+215,TZA,United Republic of Tanzania,REGION,COUNTRY,AFR,Africa
+216,UGA,Uganda,REGION,COUNTRY,AFR,Africa
+217,UKR,Ukraine,REGION,COUNTRY,EUR,Europe
+218,URY,Uruguay,REGION,COUNTRY,AMR,Americas
+219,USA,United States of America,REGION,COUNTRY,AMR,Americas
+220,UZB,Uzbekistan,REGION,COUNTRY,EUR,Europe
+221,VCT,Saint Vincent and the Grenadines,REGION,COUNTRY,AMR,Americas
+222,VEN,Venezuela (Bolivarian Republic of),REGION,COUNTRY,AMR,Americas
+223,VGB,British Virgin Islands,REGION,COUNTRY,AMR,Americas
+224,VIR,Virgin Islands (USA),REGION,COUNTRY,AMR,Americas
+225,VNM,Viet Nam,REGION,COUNTRY,WPR,Western Pacific
+226,VUT,Vanuatu,REGION,COUNTRY,WPR,Western Pacific
+227,WLF,Wallis and Futuna Islands,REGION,COUNTRY,WPR,Western Pacific
+228,WSM,Samoa,REGION,COUNTRY,WPR,Western Pacific
+229,XKX,Kosovo (in accordance with UN Security Council resolution 1244 (1999)),NA,COUNTRY,NA,NA
+230,YEM,Yemen,REGION,COUNTRY,EMR,Eastern Mediterranean
+231,ZAF,South Africa,REGION,COUNTRY,AFR,Africa
+232,ZMB,Zambia,REGION,COUNTRY,AFR,Africa
+233,ZWE,Zimbabwe,REGION,COUNTRY,AFR,Africa
+234,Global,Global,,,Global,Global
+235,AFR,African Region,,,,
+236,AMR,Region of the Americas,,,,
+237,EMR,Eastern Mediterranean Region,,,,
+238,EUR,European Region,,,,
+239,SEAR,South-East Asia Region,,,,
+240,WPR,Western Pacific Region,,,,
